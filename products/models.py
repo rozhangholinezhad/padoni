@@ -92,6 +92,12 @@ class Product(models.Model):
         max_length=255,
         verbose_name="نام محصول",
     )
+    name_en = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name="نام انگلیسی / زیرعنوان",
+        help_text="مثلاً: OXVA Xlim Pro 2 Pod Kit • 30W Maximum Output",
+    )
     slug = models.SlugField(
         max_length=270,
         unique=True,
@@ -104,14 +110,47 @@ class Product(models.Model):
         unique=True,
         verbose_name="کد کالا (SKU)",
     )
+    brand = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name="برند",
+        help_text="مثلاً: OXVA، IQOS، Vaporesso",
+    )
     short_description = models.CharField(
-        max_length=300,
+        max_length=500,
         blank=True,
         verbose_name="توضیح کوتاه",
     )
     description = models.TextField(
         blank=True,
-        verbose_name="توضیحات کامل",
+        verbose_name="توضیحات کامل / بررسی تخصصی",
+    )
+    specs = models.TextField(
+        blank=True,
+        verbose_name="مشخصات فنی",
+        help_text="هر خط یک مشخصه: برچسب|مقدار  مثلاً: ظرفیت باتری|۱۰۰۰ میلی‌آمپر",
+    )
+    usage_guide = models.TextField(
+        blank=True,
+        verbose_name="راهنمای استفاده و نگهداری",
+    )
+    badge_1 = models.CharField(
+        max_length=80,
+        blank=True,
+        verbose_name="بج مشخصات ۱",
+        help_text="مثلاً: توان ۳۰ وات واقعی",
+    )
+    badge_2 = models.CharField(
+        max_length=80,
+        blank=True,
+        verbose_name="بج مشخصات ۲",
+        help_text="مثلاً: باتری ۱۰۰۰ میلی‌آمپر",
+    )
+    badge_3 = models.CharField(
+        max_length=80,
+        blank=True,
+        verbose_name="بج مشخصات ۳",
+        help_text="مثلاً: شارژ فوق سریع Type-C",
     )
     price = models.DecimalField(
         max_digits=12,
@@ -149,6 +188,18 @@ class Product(models.Model):
         choices=DeviceCompatibility.choices,
         default=DeviceCompatibility.MULTI,
         verbose_name="سازگاری با دستگاه",
+    )
+    rating = models.DecimalField(
+        max_digits=2,
+        decimal_places=1,
+        default=0,
+        validators=[MinValueValidator(0)],
+        verbose_name="امتیاز میانگین",
+        help_text="از ۰ تا ۵",
+    )
+    reviews_count = models.PositiveIntegerField(
+        default=0,
+        verbose_name="تعداد نظرات",
     )
     is_active = models.BooleanField(
         default=True,
@@ -200,23 +251,75 @@ class Product(models.Model):
     @property
     def final_price(self):
         """قیمت نهایی قابل پرداخت"""
-        if self.discount_price is not None and self.discount_price < self.price:
+        if self.price is None:
+            return None
+        if (
+            self.discount_price is not None
+            and self.discount_price < self.price
+        ):
             return self.discount_price
         return self.price
 
     @property
     def has_discount(self) -> bool:
-        return (
-            self.discount_price is not None
-            and self.discount_price < self.price
-        )
+        if self.price is None or self.discount_price is None:
+            return False
+        return self.discount_price < self.price
 
     @property
     def discount_percent(self) -> int:
-        if not self.has_discount or self.price == 0:
+        if not self.has_discount or not self.price:
             return 0
         return int(((self.price - self.discount_price) / self.price) * 100)
 
     @property
     def is_in_stock(self) -> bool:
         return self.stock > 0 and self.is_available and self.is_active
+
+    def get_specs_list(self):
+        """لیست مشخصات فنی از فیلد specs (فرمت: برچسب|مقدار در هر خط)"""
+        if not self.specs:
+            return []
+        rows = []
+        for line in self.specs.strip().splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            if "|" in line:
+                label, value = line.split("|", 1)
+                rows.append({"label": label.strip(), "value": value.strip()})
+            else:
+                rows.append({"label": "", "value": line})
+        return rows
+
+
+class ProductImage(models.Model):
+    """تصاویر گالری محصول"""
+
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name="images",
+        verbose_name="محصول",
+    )
+    image = models.ImageField(
+        upload_to="products/gallery/",
+        verbose_name="تصویر",
+    )
+    alt = models.CharField(
+        max_length=200,
+        blank=True,
+        verbose_name="متن جایگزین",
+    )
+    order = models.PositiveIntegerField(
+        default=0,
+        verbose_name="ترتیب",
+    )
+
+    class Meta:
+        verbose_name = "تصویر محصول"
+        verbose_name_plural = "تصاویر محصول"
+        ordering = ["order", "id"]
+
+    def __str__(self) -> str:
+        return f"{self.product.name} - تصویر {self.order or self.pk}"
