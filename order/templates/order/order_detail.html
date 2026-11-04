@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}وضعیت سفارش {{ order.order_number }} | واریان{% endblock %}
+
+{% block extra_head %}
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<style>.material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }</style>
+{% endblock %}
+
+{% block content %}
+<nav class="flex items-center gap-2 text-xs text-gray-500 mb-6">
+  <a href="/" class="hover:text-gray-900">خانه</a>
+  <span class="material-symbols-outlined text-sm">chevron_left</span>
+  <a href="{% url 'order:order_list' %}" class="hover:text-gray-900">سفارش‌ها</a>
+  <span class="material-symbols-outlined text-sm">chevron_left</span>
+  <span class="text-gray-900 font-bold">وضعیت سفارش</span>
+</nav>
+
+{% with st=order.status %}
+<div class="bg-white border border-gray-200 rounded-2xl p-6 md:p-8 shadow-sm mb-8">
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div class="flex items-start gap-5">
+      <div class="w-16 h-16 rounded-2xl flex items-center justify-center shrink-0
+        {% if st == 'confirmed' or st == 'processing' or st == 'shipped' or st == 'delivered' %}bg-emerald-50 border border-emerald-200 text-emerald-600
+        {% elif st == 'rejected' or st == 'cancelled' %}bg-red-50 border border-red-200 text-red-600
+        {% else %}bg-amber-50 border border-amber-200 text-amber-600{% endif %}">
+        <span class="material-symbols-outlined text-[36px]">
+          {% if st == 'confirmed' or st == 'processing' %}check_circle
+          {% elif st == 'rejected' %}cancel
+          {% elif st == 'shipped' or st == 'delivered' %}local_shipping
+          {% else %}hourglass_empty{% endif %}
+        </span>
+      </div>
+      <div>
+        <div class="flex flex-wrap items-center gap-3 mb-2">
+          <h1 class="text-2xl font-bold text-gray-900">سفارش شما ثبت شد</h1>
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border
+            {% if st == 'confirmed' or st == 'processing' or st == 'shipped' or st == 'delivered' %}bg-emerald-100 text-emerald-800 border-emerald-300
+            {% elif st == 'rejected' or st == 'cancelled' %}bg-red-100 text-red-800 border-red-300
+            {% else %}bg-amber-100 text-amber-800 border-amber-300{% endif %}">
+            <span class="w-2 h-2 rounded-full {% if st == 'awaiting_verify' or st == 'pending_payment' %}bg-amber-500 animate-pulse{% elif st == 'rejected' %}bg-red-500{% else %}bg-emerald-500{% endif %}"></span>
+            {{ order.get_status_display }}
+          </span>
+        </div>
+        <p class="text-sm text-gray-500 max-w-2xl">
+          {% if st == 'awaiting_verify' %}
+          فیش شما دریافت شد و در صف بررسی مالی است (معمولاً تا ۳۰–۴۵ دقیقه در ساعات اداری).
+          {% elif st == 'confirmed' or st == 'processing' %}
+          پرداخت تأیید شد. سفارش در حال آماده‌سازی است.
+          {% elif st == 'rejected' %}
+          فیش رد شد. در صورت نیاز دوباره فیش معتبر آپلود کنید یا با پشتیبانی تماس بگیرید.
+          {% elif st == 'shipped' %}
+          سفارش ارسال شده است.
+          {% else %}
+          جزئیات سفارش و پرداخت را در این صفحه پیگیری کنید.
+          {% endif %}
+        </p>
+        <p class="text-xs text-gray-400 mt-2 font-mono" dir="ltr">#{{ order.order_number }}</p>
+      </div>
+    </div>
+    <div class="text-left md:border-r border-gray-100 md:pr-8">
+      <span class="text-xs text-gray-500">مبلغ کل</span>
+      <div class="text-2xl font-black text-gray-900">{{ order.total|floatformat:0 }} <span class="text-xs font-medium text-gray-500">تومان</span></div>
+    </div>
+  </div>
+</div>
+{% endwith %}
+
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+  <div class="lg:col-span-7 space-y-6">
+    <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+      <h2 class="font-bold mb-4 flex items-center gap-2">
+        <span class="material-symbols-outlined text-[#7628F5]">receipt_long</span>
+        مشخصات سفارش
+      </h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+        <div class="p-3 rounded-xl bg-gray-50 border border-gray-100">
+          <span class="text-xs text-gray-500 block">تاریخ ثبت</span>
+          <span class="font-bold">{{ order.created_at }}</span>
+        </div>
+        <div class="p-3 rounded-xl bg-gray-50 border border-gray-100">
+          <span class="text-xs text-gray-500 block">روش پرداخت</span>
+          <span class="font-bold">{{ order.get_payment_method_display }}</span>
+        </div>
+        <div class="p-3 rounded-xl bg-gray-50 border border-gray-100 sm:col-span-2">
+          <span class="text-xs text-gray-500 block">آدرس ارسال</span>
+          <span class="font-medium">{{ order.receiver_name }} — {{ order.receiver_phone }}</span>
+          <p class="text-gray-600 mt-1">{{ order.province }}، {{ order.city }}، {{ order.address }} — کدپستی {{ order.postal_code }}</p>
+        </div>
+      </div>
+    </div>
+
+    {% if order.receipts.all %}
+    <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+      <h2 class="font-bold mb-4 flex items-center gap-2">
+        <span class="material-symbols-outlined text-[#7628F5]">attachment</span>
+        فیش‌های ارسال‌شده
+      </h2>
+      <ul class="space-y-3">
+        {% for r in order.receipts.all %}
+        <li class="border border-gray-100 rounded-xl p-4 flex flex-wrap items-center justify-between gap-3 text-sm">
+          <div>
+            <span class="font-semibold">{{ r.get_status_display }}</span>
+            <span class="text-xs text-gray-500 mr-2">{{ r.uploaded_at }}</span>
+            {% if r.tracking_code %}<span class="text-xs font-mono text-gray-600" dir="ltr">· {{ r.tracking_code }}</span>{% endif %}
+          </div>
+          {% if r.image %}
+          <a href="{{ r.image.url }}" target="_blank" class="text-[#7628F5] text-xs font-bold flex items-center gap-1">
+            <span class="material-symbols-outlined text-[16px]">visibility</span>
+            مشاهده فیش
+          </a>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+  </div>
+
+  <aside class="lg:col-span-5 space-y-4">
+    <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+      <h3 class="font-bold mb-4">اقلام ({{ order.items.count }})</h3>
+      <div class="space-y-3 text-sm divide-y divide-gray-50">
+        {% for item in order.items.all %}
+        <div class="flex justify-between gap-2 pt-2 first:pt-0">
+          <div>
+            <p class="font-semibold">{{ item.product_name }}</p>
+            <p class="text-xs text-gray-500">{{ item.quantity }} عدد × {{ item.unit_price|floatformat:0 }}</p>
+          </div>
+          <span class="font-bold whitespace-nowrap">{{ item.line_total|floatformat:0 }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="mt-4 pt-4 border-t border-gray-100 flex justify-between font-bold">
+        <span>نهایی</span>
+        <span>{{ order.total|floatformat:0 }} تومان</span>
+      </div>
+    </div>
+    {% if order.can_upload_receipt %}
+    <a href="{% url 'order:payment' order.order_number %}"
+       class="block w-full text-center py-3.5 rounded-full bg-[#C9F45B] text-[#17151F] font-bold hover:bg-[#b8e353]">
+      پرداخت / آپلود فیش
+    </a>
+    {% endif %}
+    <a href="{% url 'products:product_list' %}"
+       class="block w-full text-center py-3 rounded-full border border-gray-200 text-sm font-semibold hover:bg-gray-50">
+      بازگشت به فروشگاه
+    </a>
+  </aside>
+</div>
+{% endblock %}

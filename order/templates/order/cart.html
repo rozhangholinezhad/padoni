@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}سبد خرید | واریان - VARIAN TECH{% endblock %}
+
+{% block extra_head %}
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<style>
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  .line-clamp-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="mb-4 text-sm text-gray-500 flex items-center gap-2">
+  <a href="/" class="hover:text-gray-900">صفحه اصلی</a>
+  <span class="material-symbols-outlined text-sm">chevron_left</span>
+  <span class="text-gray-900 font-medium">سبد خرید</span>
+</nav>
+
+<div class="bg-white border border-gray-100 rounded-xl p-6 mb-8 shadow-sm">
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-gray-100">
+    <div class="flex items-center gap-3">
+      <div class="w-12 h-12 rounded-xl bg-[#F0E9FF] flex items-center justify-center text-[#7628F5]">
+        <span class="material-symbols-outlined text-[28px]" style="font-variation-settings:'FILL' 1;">shopping_bag</span>
+      </div>
+      <div>
+        <div class="flex items-center gap-3">
+          <h1 class="text-2xl font-bold text-gray-900">سبد خرید شما</h1>
+          <span class="bg-[#17151F] text-[#C9F45B] text-xs font-bold px-2.5 py-0.5 rounded-full">
+            {{ cart.total_items|default:0 }} کالا
+          </span>
+        </div>
+        <p class="text-sm text-gray-500 mt-1">محصولات انتخاب‌شده را بررسی کن و برای ادامه سفارش آماده شو.</p>
+      </div>
+    </div>
+    <a href="{% url 'products:product_list' %}" class="inline-flex items-center gap-1.5 text-sm font-semibold text-[#7628F5] hover:text-[#5d1ec5]">
+      <span>ادامه خرید و مشاهده کاتالوگ</span>
+      <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+    </a>
+  </div>
+</div>
+
+{% if not items %}
+<div class="bg-white border border-dashed border-gray-200 rounded-2xl p-10 text-center">
+  <div class="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 mx-auto mb-3">
+    <span class="material-symbols-outlined text-[32px]">production_quantity_limits</span>
+  </div>
+  <h4 class="font-bold text-gray-900 mb-1">سبد خریدت در حال حاضر خالیه!</h4>
+  <p class="text-sm text-gray-500 mb-4">هنوز دستگاه یا لوازم جانبی اضافه نکردی.</p>
+  <a href="{% url 'products:product_list' %}" class="inline-block bg-[#17151F] text-[#C9F45B] text-sm font-bold py-2.5 px-5 rounded-full">
+    شروع خرید و مشاهده فروشگاه
+  </a>
+</div>
+{% else %}
+
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+  <section class="lg:col-span-8 space-y-4">
+    {% for item in items %}
+    <article class="bg-white border border-gray-100 rounded-xl p-5 shadow-sm hover:border-gray-300 transition-all">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center gap-5">
+        <div class="w-full sm:w-28 h-28 bg-[#F4F4F2] rounded-lg p-2 flex items-center justify-center shrink-0 border border-gray-100">
+          {% if item.product.image %}
+          <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="w-full h-full object-contain"/>
+          {% else %}
+          <span class="text-gray-300 text-xs">بدون تصویر</span>
+          {% endif %}
+        </div>
+        <div class="flex-1 min-w-0 w-full">
+          <div>
+            {% if item.product.brand %}
+            <span class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider block">{{ item.product.brand }}</span>
+            {% endif %}
+            <a href="{{ item.product.get_absolute_url }}">
+              <h3 class="font-bold text-gray-900 leading-snug hover:text-[#7628F5]">{{ item.product.name }}</h3>
+            </a>
+          </div>
+          <div class="flex flex-wrap items-center gap-2 mt-2">
+            {% if item.product.flavor %}
+            <span class="text-xs bg-gray-50 text-gray-600 px-2.5 py-1 rounded-md border border-gray-100">{{ item.product.flavor }}</span>
+            {% endif %}
+            {% if item.product.is_in_stock %}
+            <span class="text-xs bg-[#C8F169]/30 text-[#394d00] font-medium px-2 py-0.5 rounded">موجود در انبار</span>
+            {% else %}
+            <span class="text-xs bg-red-50 text-red-700 font-medium px-2 py-0.5 rounded">ناموجود</span>
+            {% endif %}
+          </div>
+          <div class="flex flex-wrap items-center justify-between gap-4 mt-4 pt-3 border-t border-gray-100">
+            <form method="post" action="{% url 'order:update_cart_item' item.product_id %}" class="flex items-center border border-gray-200 rounded-lg bg-white p-1">
+              {% csrf_token %}
+              <input type="number" name="quantity" value="{{ item.quantity }}" min="1"
+                     class="w-12 text-center font-bold text-sm border-0 focus:ring-0" dir="ltr"/>
+              <button type="submit" class="text-xs text-[#7628F5] px-2 font-medium">بروز</button>
+            </form>
+            <div class="text-left">
+              {% if item.product.has_discount %}
+              <div class="text-xs text-gray-400 line-through">{{ item.product.price|floatformat:0 }} تومان</div>
+              {% endif %}
+              <div class="font-bold text-gray-900 text-base">
+                {{ item.line_total|floatformat:0 }} <span class="text-xs font-normal text-gray-500">تومان</span>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center justify-end gap-3 mt-3 text-xs">
+            <form method="post" action="{% url 'order:remove_cart_item' item.product_id %}">
+              {% csrf_token %}
+              <button type="submit" class="inline-flex items-center gap-1 text-red-600 hover:text-red-800 py-1 px-2 rounded hover:bg-red-50">
+                <span class="material-symbols-outlined text-[16px]">delete</span>
+                <span>حذف</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </article>
+    {% endfor %}
+  </section>
+
+  <aside class="lg:col-span-4 space-y-4 sticky top-24">
+    <div class="bg-white border border-gray-100 rounded-xl p-6 shadow-sm space-y-4">
+      <h2 class="font-bold text-gray-900">خلاصه سفارش</h2>
+      <div class="flex justify-between text-sm text-gray-600">
+        <span>جمع اقلام ({{ cart.total_items }} کالا)</span>
+        <span class="font-semibold text-gray-900">{{ total|floatformat:0 }} تومان</span>
+      </div>
+      <div class="flex justify-between text-sm text-gray-600">
+        <span>هزینه ارسال</span>
+        <span class="text-emerald-600 font-medium">در مرحله بعد</span>
+      </div>
+      <div class="pt-4 border-t border-gray-100 flex justify-between items-center">
+        <span class="font-bold">مبلغ قابل پرداخت</span>
+        <span class="text-xl font-black text-[#7628F5]">{{ total|floatformat:0 }} <span class="text-xs font-medium text-gray-500">تومان</span></span>
+      </div>
+      {% if user.is_authenticated %}
+      <a href="{% url 'order:checkout' %}"
+         class="block w-full text-center py-3.5 rounded-full bg-gradient-to-r from-[#7628F5] to-[#E83E9B] text-white font-bold shadow-lg shadow-purple-500/20 hover:opacity-95">
+        ادامه و ثبت سفارش
+      </a>
+      {% else %}
+      <a href="{% url 'accounts:login' %}?next={% url 'order:checkout' %}"
+         class="block w-full text-center py-3.5 rounded-full bg-[#7628F5] text-white font-bold">
+        ورود برای ثبت سفارش
+      </a>
+      {% endif %}
+      <p class="text-[11px] text-gray-500 text-center">پرداخت به‌صورت کارت‌به‌کارت و تأیید فیش</p>
+    </div>
+    <div class="bg-white border border-gray-100 rounded-xl p-4 flex items-center justify-between text-xs text-gray-500">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-[20px]">help_outline</span>
+        <span>نیاز به راهنمایی قبل از خرید؟</span>
+      </div>
+      <a href="tel:02188223344" class="font-bold text-gray-900 hover:text-[#7628F5]">تماس با کارشناس</a>
+    </div>
+  </aside>
+</div>
+{% endif %}
+{% endblock %}

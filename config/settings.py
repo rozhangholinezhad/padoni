@@ -66,6 +66,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'products.context_processors.navbar_categories',
             ],
         },
     },
@@ -135,3 +136,9 @@ MEDIA_ROOT = BASE_DIR / "static_cdn" / "media_root"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+AUTH_USER_MODEL = 'accounts.User'
+
+LOGIN_URL = 'accounts:login'
+LOGIN_REDIRECT_URL = 'accounts:profile'
+LOGOUT_REDIRECT_URL = 'products:product_list'

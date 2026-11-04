@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}تسویه حساب و پرداخت کارت‌به‌کارت | واریان{% endblock %}
+
+{% block extra_head %}
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<style>.material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }</style>
+{% endblock %}
+
+{% block content %}
+<section class="mb-6">
+  <nav class="flex items-center gap-2 text-sm text-gray-500 mb-4">
+    <a href="/" class="hover:text-[#7628F5]">خانه</a>
+    <span>/</span>
+    <a href="{% url 'order:cart' %}" class="hover:text-[#7628F5]">سبد خرید</a>
+    <span>/</span>
+    <span class="text-[#7628F5] font-semibold">تسویه حساب</span>
+  </nav>
+  <div class="flex flex-wrap items-center gap-2 sm:gap-4 text-sm">
+    <div class="flex items-center gap-2">
+      <div class="w-7 h-7 rounded-full bg-[#C9F45B] text-[#17151F] flex items-center justify-center">
+        <span class="material-symbols-outlined text-[16px] font-bold">check</span>
+      </div>
+      <span class="font-semibold">سبد خرید</span>
+    </div>
+    <div class="w-8 h-0.5 bg-[#C9F45B]"></div>
+    <div class="flex items-center gap-2">
+      <div class="w-7 h-7 rounded-full bg-gradient-to-r from-[#7628F5] to-[#E83E9B] text-white flex items-center justify-center text-xs font-bold ring-4 ring-purple-100">۲</div>
+      <span class="font-bold text-[#7628F5]">اطلاعات و پرداخت</span>
+    </div>
+    <div class="w-8 h-0.5 bg-gray-200"></div>
+    <div class="flex items-center gap-2 opacity-50">
+      <div class="w-7 h-7 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center text-xs font-bold">۳</div>
+      <span class="text-gray-500">ثبت نهایی</span>
+    </div>
+  </div>
+</section>
+
+<div class="mb-8 p-4 rounded-2xl bg-gradient-to-r from-[#17151F] via-[#241F33] to-[#17151F] text-white flex flex-col sm:flex-row items-center justify-between gap-4 border border-white/10">
+  <div class="flex items-center gap-3">
+    <span class="w-9 h-9 rounded-xl bg-[#C9F45B]/20 text-[#C9F45B] flex items-center justify-center shrink-0">
+      <span class="material-symbols-outlined text-[20px]">verified_user</span>
+    </span>
+    <p class="text-sm text-slate-200">
+      <span class="font-bold text-white">تسویه امن واریان:</span>
+      پرداخت کارت‌به‌کارت + آپلود فیش تا تأیید ادمین. فروش فقط به افراد بالای ۱۸ سال.
+    </p>
+  </div>
+  <div class="flex items-center gap-2 text-xs font-mono bg-white/10 px-3 py-1.5 rounded-full text-[#C9F45B]">
+    <span class="w-2 h-2 rounded-full bg-[#C9F45B] animate-pulse"></span>
+    کارت‌به‌کارت مستقیم
+  </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+  <div class="lg:col-span-8">
+    <form method="post" class="space-y-6">
+      {% csrf_token %}
+      <section class="bg-white border border-gray-200 rounded-2xl p-6 sm:p-8 shadow-sm">
+        <div class="flex items-center gap-3 pb-5 border-b border-gray-100 mb-6">
+          <span class="w-8 h-8 rounded-lg bg-[#7628F5]/10 text-[#7628F5] flex items-center justify-center">
+            <span class="material-symbols-outlined text-[20px]">person_outline</span>
+          </span>
+          <h2 class="text-xl font-bold">۱. اطلاعات گیرنده و ارسال</h2>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          {% for field in form %}
+          <div class="{% if field.name == 'address' or field.name == 'user_note' %}sm:col-span-2{% endif %}">
+            <label class="block text-sm font-semibold text-gray-900 mb-2">
+              {{ field.label }}{% if field.field.required %} <span class="text-[#E83E9B]">*</span>{% endif %}
+            </label>
+            {{ field }}
+            {% if field.errors %}<p class="text-xs text-red-500 mt-1">{{ field.errors.0 }}</p>{% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </section>
+      <button type="submit"
+              class="w-full py-4 px-6 rounded-full bg-gradient-to-r from-[#7628F5] via-[#9647f8] to-[#E83E9B] text-white font-bold shadow-lg shadow-purple-500/25 hover:opacity-95 flex items-center justify-center gap-2">
+        <span>ثبت سفارش و رفتن به پرداخت کارت‌به‌کارت</span>
+        <span class="material-symbols-outlined text-[20px]">arrow_back</span>
+      </button>
+    </form>
+  </div>
+
+  <aside class="lg:col-span-4 sticky top-24 space-y-4">
+    <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+      <h3 class="font-bold mb-4">خلاصه سبد</h3>
+      <div class="space-y-3 max-h-64 overflow-y-auto mb-4">
+        {% for item in items %}
+        <div class="flex items-center gap-3 text-sm">
+          <div class="w-12 h-12 rounded-lg bg-gray-50 border flex items-center justify-center shrink-0 overflow-hidden">
+            {% if item.product.image %}
+            <img src="{{ item.product.image.url }}" class="w-full h-full object-contain" alt=""/>
+            {% endif %}
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="font-semibold line-clamp-1">{{ item.product.name }}</p>
+            <p class="text-xs text-gray-500">{{ item.quantity }} عدد</p>
+          </div>
+          <span class="text-xs font-bold whitespace-nowrap">{{ item.line_total|floatformat:0 }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="space-y-2 text-sm border-t border-gray-100 pt-4">
+        <div class="flex justify-between text-gray-600">
+          <span>جمع اقلام</span>
+          <span class="font-semibold text-gray-900">{{ subtotal|floatformat:0 }} تومان</span>
+        </div>
+        <div class="flex justify-between text-gray-600">
+          <span>ارسال</span>
+          <span>{{ shipping_cost|floatformat:0 }} تومان</span>
+        </div>
+        <div class="flex justify-between items-center pt-2 border-t border-gray-100">
+          <span class="font-bold">قابل پرداخت</span>
+          <span class="text-xl font-black text-[#7628F5]">{{ total|floatformat:0 }} <span class="text-xs font-medium text-gray-500">تومان</span></span>
+        </div>
+      </div>
+    </div>
+  </aside>
+</div>
+{% endblock %}

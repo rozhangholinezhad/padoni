@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}تکمیل اطلاعات | واریان تک{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto">
+    <h1 class="text-2xl font-bold mb-1">تکمیل اطلاعات ارسال</h1>
+    <p class="text-sm text-gray-500 mb-6">این اطلاعات برای ثبت و ارسال سفارش‌ها استفاده می‌شود.</p>
+
+    <form method="post" class="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm space-y-4">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+        <div class="text-sm text-red-600">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">نام *</label>
+                {{ form.first_name }}
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">نام خانوادگی *</label>
+                {{ form.last_name }}
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">ایمیل</label>
+                {{ form.email }}
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">کد ملی</label>
+                {{ form.national_code }}
+            </div>
+        </div>
+
+        <hr class="border-gray-100" />
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">استان *</label>
+                {{ form.province }}
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">شهر *</label>
+                {{ form.city }}
+            </div>
+        </div>
+
+        <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">کد پستی *</label>
+            {{ form.postal_code }}
+        </div>
+        <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">آدرس کامل *</label>
+            {{ form.address }}
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">نام گیرنده</label>
+                {{ form.receiver_name }}
+                <p class="text-[11px] text-gray-400 mt-1">اگر خالی باشد همان نام خودتان</p>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">موبایل گیرنده</label>
+                {{ form.receiver_phone }}
+            </div>
+        </div>
+
+        <button type="submit"
+            class="w-full py-3 rounded-xl bg-[#7628F5] text-white font-bold hover:opacity-95 transition">
+            ذخیره اطلاعات
+        </button>
+        <a href="{% url 'accounts:profile' %}"
+            class="block text-center text-sm text-gray-500 hover:text-gray-900">انصراف</a>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}سفارش‌های من | واریان{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <h1 class="text-2xl font-bold mb-6">سفارش‌های من</h1>
+    {% if not orders %}
+    <p class="text-gray-500">هنوز سفارشی ثبت نکرده‌اید.</p>
+    {% else %}
+    <div class="space-y-3">
+        {% for order in orders %}
+        <a href="{{ order.get_absolute_url }}"
+           class="block bg-white border rounded-2xl p-4 hover:border-[#7628F5]/40 transition">
+            <div class="flex justify-between items-start gap-3">
+                <div>
+                    <p class="font-mono font-semibold text-sm" dir="ltr">{{ order.order_number }}</p>
+                    <p class="text-xs text-gray-500 mt-1">{{ order.created_at }}</p>
+                </div>
+                <div class="text-left">
+                    <span class="text-xs px-2 py-1 rounded-full bg-purple-50 text-[#7628F5]">
+                        {{ order.get_status_display }}
+                    </span>
+                    <p class="font-bold text-sm mt-2">{{ order.total|floatformat:0 }} تومان</p>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

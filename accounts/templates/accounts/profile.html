@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}پروفایل من | واریان تک{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto space-y-6">
+    <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-bold">حساب کاربری</h1>
+        <a href="{% url 'accounts:logout' %}" class="text-sm text-red-600 hover:underline">خروج</a>
+    </div>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="px-4 py-3 rounded-xl text-sm bg-green-50 text-green-700">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+
+    {% if needs_complete %}
+    <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-sm text-amber-900">
+        <p class="font-semibold mb-1">پروفایل ناقص است</p>
+        <p class="text-amber-800 mb-3">برای ثبت سفارش، نام و آدرس ارسال را تکمیل کنید.</p>
+        <a href="{% url 'accounts:profile_complete' %}"
+            class="inline-block bg-[#7628F5] text-white text-xs font-bold px-4 py-2 rounded-full">
+            تکمیل اطلاعات
+        </a>
+    </div>
+    {% endif %}
+
+    <div class="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm space-y-4">
+        <h2 class="font-bold text-sm text-gray-500">اطلاعات شخصی</h2>
+        <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+            <div>
+                <dt class="text-gray-500 text-xs">نام کامل</dt>
+                <dd class="font-medium">{{ profile_user.get_full_name|default:"—" }}</dd>
+            </div>
+            <div>
+                <dt class="text-gray-500 text-xs">موبایل</dt>
+                <dd class="font-medium font-mono" dir="ltr">{{ profile_user.phone }}</dd>
+            </div>
+            <div>
+                <dt class="text-gray-500 text-xs">ایمیل</dt>
+                <dd class="font-medium">{{ profile_user.email|default:"—" }}</dd>
+            </div>
+            <div>
+                <dt class="text-gray-500 text-xs">کد ملی</dt>
+                <dd class="font-medium">{{ profile_user.national_code|default:"—" }}</dd>
+            </div>
+        </dl>
+    </div>
+
+    <div class="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm space-y-4">
+        <h2 class="font-bold text-sm text-gray-500">آدرس ارسال پیش‌فرض</h2>
+        {% if profile_user.address %}
+        <dl class="space-y-2 text-sm">
+            <div><span class="text-gray-500 text-xs">استان / شهر:</span> {{ profile_user.province }} — {{
+                profile_user.city }}</div>
+            <div><span class="text-gray-500 text-xs">کد پستی:</span> {{ profile_user.postal_code }}</div>
+            <div><span class="text-gray-500 text-xs">آدرس:</span> {{ profile_user.address }}</div>
+            <div><span class="text-gray-500 text-xs">گیرنده:</span> {{ profile_user.get_shipping_receiver }} — {{
+                profile_user.get_shipping_phone }}</div>
+        </dl>
+        {% else %}
+        <p class="text-sm text-gray-500">آدرسی ثبت نشده است.</p>
+        {% endif %}
+        <a href="{% url 'accounts:profile_complete' %}"
+            class="inline-block text-sm font-semibold text-[#7628F5] hover:underline">
+            ویرایش اطلاعات و آدرس
+        </a>
+    </div>
+</div>
+{% endblock %}

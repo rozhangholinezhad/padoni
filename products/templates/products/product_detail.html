@@ -65,17 +65,39 @@
             </div>
         </div>
 
-        <div class="mt-8">
-            {% if product.is_in_stock %}
-                <button class="w-full sm:w-auto bg-black text-white font-medium px-8 py-3.5 rounded-xl hover:bg-gray-800 transition">
-                    افزودن به سبد خرید
-                </button>
-            {% else %}
-                <button disabled class="w-full sm:w-auto bg-gray-200 text-gray-500 font-medium px-8 py-3.5 rounded-xl cursor-not-allowed">
-                    فعلاً موجود نیست
-                </button>
-            {% endif %}
-        </div>
+
+<div class="mt-8">
+
+    {% if product.is_in_stock %}
+
+        <form method="POST"
+              action="{% url 'order:add_to_cart' slug=product.slug %}">
+
+            {% csrf_token %}
+
+            <button type="submit"
+                    class="w-full sm:w-auto bg-black text-white font-medium px-8 py-3.5 rounded-xl hover:bg-gray-800 transition">
+
+                افزودن به سبد خرید
+
+            </button>
+
+        </form>
+
+    {% else %}
+
+        <button type="button"
+                disabled
+                class="w-full sm:w-auto bg-gray-200 text-gray-500 font-medium px-8 py-3.5 rounded-xl cursor-not-allowed">
+
+            فعلاً موجود نیست
+
+        </button>
+
+    {% endif %}
+
+</div>
+
     </div>
 </div>
 
